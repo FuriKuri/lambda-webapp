@@ -284,6 +284,91 @@
           }
         ]
       }
+    },
+
+    "ApiInvokeLmabda": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "apigateway.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "api_gateway_invoke_fn",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+    ,
+    "MyRestApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Description": "A test API",
+        "Name": "MyRestAPI"
+      }
+    },
+    "MockMethod": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": { "Ref": "MyRestApi" },
+        "ResourceId": { "Fn::GetAtt": ["MyRestApi", "RootResourceId"] },
+        "HttpMethod": "POST",
+        "AuthorizationType": "NONE",
+        "MethodResponses" : [
+          {
+            "StatusCode" : "200"
+          }
+        ],
+        "Integration": {
+          "Type": "AWS",
+          "Credentials": {"Fn::GetAtt" : [ "ApiInvokeLmabda" , "Arn" ]},
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [{
+            "SelectionPattern": ".*",
+            "StatusCode" : "200"
+          }],
+          "Uri" : { "Fn::Join" : [
+              "", [
+                "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/",
+                { "Fn::GetAtt" : ["LambdaVoteFunction", "Arn"] } ,
+                "/invocations"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "Deployment": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "DependsOn" : "MockMethod",
+      "Properties": {
+        "RestApiId": { "Ref": "MyRestApi" },
+        "Description": "My deployment",
+        "StageName": "Prod"
+      }
     }
   },
 
