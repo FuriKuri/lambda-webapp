@@ -1,132 +1,118 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-
-  "Description" : "AWS CloudFormation Template for VoteApp",
-
+  "Description": "AWS CloudFormation Template for VoteApp",
   "Parameters": {
-
     "S3BucketName": {
-        "Description": "S3 bucket in which the static app will reside",
-        "Type": "String",
-        "MinLength": "3",
-        "MaxLength": "63",
-        "Default": "furikuri-votebucket"
+      "Description": "S3 bucket in which the static app will reside",
+      "Type": "String",
+      "MinLength": "3",
+      "MaxLength": "63",
+      "Default": "furikuri-votebucket"
     },
-
-    "LambdaS3Bucket" : {
-        "Description" : "Name of S3 bucket where Lambda function packages are stored.",
-        "Type" : "String",
-        "Default" : "furikuri-awslambda"
+    "LambdaS3Bucket": {
+      "Description": "Name of S3 bucket where Lambda function packages are stored.",
+      "Type": "String",
+      "Default": "furikuri-awslambda"
     },
-
-    "LambdaReceiveS3Key" : {
-        "Description" : "Name of S3 key for ZIP with Lambda function package that receives votes.",
-        "Type" : "String",
-        "Default" : "webapp/receive.zip"
+    "LambdaReceiveS3Key": {
+      "Description": "Name of S3 key for ZIP with Lambda function package that receives votes.",
+      "Type": "String",
+      "Default": "webapp/receive.zip"
     },
-
-    "LambdaAggregateS3Key" : {
-        "Description" : "Name of S3 key for ZIP with Lambda function package that aggregates votes.",
-        "Type" : "String",
-        "Default" : "webapp/aggregate.zip"
+    "LambdaAggregateS3Key": {
+      "Description": "Name of S3 key for ZIP with Lambda function package that aggregates votes.",
+      "Type": "String",
+      "Default": "webapp/aggregate.zip"
     },
-
     "VotesTableRead": {
-        "Description": "Read capacity units for VoteApp DynamoDB table",
-        "Type": "String",
-        "MinLength": "1",
-        "MaxLength": "4",
-        "AllowedPattern": "[0-9]*",
-        "Default": "1"
+      "Description": "Read capacity units for VoteApp DynamoDB table",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "4",
+      "AllowedPattern": "[0-9]*",
+      "Default": "1"
     },
-
     "VotesTableWrite": {
-        "Description": "Write capacity units for VoteApp DynamoDB table",
-        "Type": "String",
-        "MinLength": "1",
-        "MaxLength": "4",
-        "AllowedPattern": "[0-9]*",
-        "Default": "1"
+      "Description": "Write capacity units for VoteApp DynamoDB table",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "4",
+      "AllowedPattern": "[0-9]*",
+      "Default": "1"
     },
-
     "AggregatesTableRead": {
-        "Description": "Read capacity units for VoteAppAggregates aggregates table",
-        "Type": "String",
-        "MinLength": "1",
-        "MaxLength": "4",
-        "AllowedPattern": "[0-9]*",
-        "Default": "1"
+      "Description": "Read capacity units for VoteAppAggregates aggregates table",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "4",
+      "AllowedPattern": "[0-9]*",
+      "Default": "1"
     },
-
     "AggregatesTableWrite": {
-        "Description": "Write capacity units for VoteAppAggregates aggregates table",
-        "Type": "String",
-        "MinLength": "1",
-        "MaxLength": "4",
-        "AllowedPattern": "[0-9]*",
-        "Default": "1"
+      "Description": "Write capacity units for VoteAppAggregates aggregates table",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "4",
+      "AllowedPattern": "[0-9]*",
+      "Default": "1"
     }
   },
-
   "Resources": {
-
     "DynamoDBVoteTable": {
-        "Type": "AWS::DynamoDB::Table",
-        "Properties": {
-          "AttributeDefinitions": [
-            {
-              "AttributeName": "VotedFor",
-              "AttributeType": "S"
-            }
-          ],
-          "KeySchema": [
-            {
-              "AttributeName": "VotedFor",
-              "KeyType": "HASH"
-            }
-          ],
-          "ProvisionedThroughput": {
-            "ReadCapacityUnits": {
-              "Ref": "VotesTableRead"
-            },
-            "WriteCapacityUnits": {
-              "Ref": "VotesTableWrite"
-            }
-          },
-          "TableName": "VoteApp",
-          "StreamSpecification": {
-            "StreamViewType": "NEW_AND_OLD_IMAGES"
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "VotedFor",
+            "AttributeType": "S"
           }
-        }
-    },
-
-    "DynamoDBAggregatesTable": {
-        "Type": "AWS::DynamoDB::Table",
-        "Properties": {
-          "AttributeDefinitions": [
-            {
-              "AttributeName": "VotedFor",
-              "AttributeType": "S"
-            }
-          ],
-          "KeySchema": [
-            {
-              "AttributeName": "VotedFor",
-              "KeyType": "HASH"
-            }
-          ],
-          "ProvisionedThroughput": {
-            "ReadCapacityUnits": {
-              "Ref": "AggregatesTableRead"
-            },
-            "WriteCapacityUnits": {
-              "Ref": "AggregatesTableWrite"
-            }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "VotedFor",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": {
+            "Ref": "VotesTableRead"
           },
-          "TableName": "VoteAppAggregates"
+          "WriteCapacityUnits": {
+            "Ref": "VotesTableWrite"
+          }
+        },
+        "TableName": "VoteApp",
+        "StreamSpecification": {
+          "StreamViewType": "NEW_AND_OLD_IMAGES"
         }
+      }
     },
-
+    "DynamoDBAggregatesTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "VotedFor",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "VotedFor",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": {
+            "Ref": "AggregatesTableRead"
+          },
+          "WriteCapacityUnits": {
+            "Ref": "AggregatesTableWrite"
+          }
+        },
+        "TableName": "VoteAppAggregates"
+      }
+    },
     "S3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
@@ -140,31 +126,40 @@
         }
       }
     },
-
-    "BucketPolicy" : {
-        "Type" : "AWS::S3::BucketPolicy",
-        "Properties" : {
-          "PolicyDocument" : {
-              "Id" : "S3BucketPolicy",
-              "Version": "2012-10-17",
-              "Statement": [
-                  {
-                    "Sid": "PublicReadForGetBucketObjects",
-                    "Effect": "Allow",
-                    "Principal": {
-                        "AWS": "*"
+    "BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Id": "S3BucketPolicy",
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "PublicReadForGetBucketObjects",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Action": "s3:GetObject",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "S3Bucket"
                     },
-                    "Action": "s3:GetObject",
-                    "Resource" : { "Fn::Join" : [
-                        "", [ "arn:aws:s3:::", { "Ref" : "S3Bucket" } , "/*" ]
-                    ] }
-                  }
-              ]
-          },
-          "Bucket" : { "Ref" : "S3Bucket" }
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        "Bucket": {
+          "Ref": "S3Bucket"
         }
+      }
     },
-
     "LambdaVoteFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -173,7 +168,7 @@
             "Ref": "LambdaS3Bucket"
           },
           "S3Key": {
-              "Ref": "LambdaReceiveS3Key"
+            "Ref": "LambdaReceiveS3Key"
           }
         },
         "Runtime": "nodejs4.3",
@@ -188,7 +183,6 @@
         "Timeout": "30"
       }
     },
-
     "LambdaAggregateFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -212,18 +206,26 @@
         "Timeout": "30"
       }
     },
-
-    "EventSourceMapping":{
-      "Type" : "AWS::Lambda::EventSourceMapping",
-      "Properties" : {
-        "BatchSize" : "10",
-        "Enabled" : true,
-        "EventSourceArn" : {"Fn::GetAtt" : [ "DynamoDBVoteTable" , "StreamArn" ]},
-        "FunctionName" : { "Fn::GetAtt" : ["LambdaAggregateFunction", "Arn"] },
-        "StartingPosition" : "TRIM_HORIZON"
+    "EventSourceMapping": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "Properties": {
+        "BatchSize": "10",
+        "Enabled": true,
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "DynamoDBVoteTable",
+            "StreamArn"
+          ]
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "LambdaAggregateFunction",
+            "Arn"
+          ]
+        },
+        "StartingPosition": "TRIM_HORIZON"
       }
     },
-
     "LambdaExecDynamoRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -285,7 +287,6 @@
         ]
       }
     },
-
     "ApiInvokeLmabda": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -321,8 +322,7 @@
           }
         ]
       }
-    }
-    ,
+    },
     "MyRestApi": {
       "Type": "AWS::ApiGateway::RestApi",
       "Properties": {
@@ -333,27 +333,48 @@
     "MockMethod": {
       "Type": "AWS::ApiGateway::Method",
       "Properties": {
-        "RestApiId": { "Ref": "MyRestApi" },
-        "ResourceId": { "Fn::GetAtt": ["MyRestApi", "RootResourceId"] },
+        "RestApiId": {
+          "Ref": "MyRestApi"
+        },
+        "ResourceId": {
+          "Fn::GetAtt": [
+            "MyRestApi",
+            "RootResourceId"
+          ]
+        },
         "HttpMethod": "POST",
         "AuthorizationType": "NONE",
-        "MethodResponses" : [
+        "MethodResponses": [
           {
-            "StatusCode" : "200"
+            "StatusCode": "200"
           }
         ],
         "Integration": {
           "Type": "AWS",
-          "Credentials": {"Fn::GetAtt" : [ "ApiInvokeLmabda" , "Arn" ]},
+          "Credentials": {
+            "Fn::GetAtt": [
+              "ApiInvokeLmabda",
+              "Arn"
+            ]
+          },
           "IntegrationHttpMethod": "POST",
-          "IntegrationResponses": [{
-            "SelectionPattern": ".*",
-            "StatusCode" : "200"
-          }],
-          "Uri" : { "Fn::Join" : [
-              "", [
+          "IntegrationResponses": [
+            {
+              "SelectionPattern": ".*",
+              "StatusCode": "200"
+            }
+          ],
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
                 "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/",
-                { "Fn::GetAtt" : ["LambdaVoteFunction", "Arn"] } ,
+                {
+                  "Fn::GetAtt": [
+                    "LambdaVoteFunction",
+                    "Arn"
+                  ]
+                },
                 "/invocations"
               ]
             ]
@@ -363,15 +384,16 @@
     },
     "Deployment": {
       "Type": "AWS::ApiGateway::Deployment",
-      "DependsOn" : "MockMethod",
+      "DependsOn": "MockMethod",
       "Properties": {
-        "RestApiId": { "Ref": "MyRestApi" },
+        "RestApiId": {
+          "Ref": "MyRestApi"
+        },
         "Description": "My deployment",
         "StageName": "Prod"
       }
     }
   },
-
   "Outputs": {
     "WebsiteURL": {
       "Description": "URL for static website hosted on S3",
@@ -382,7 +404,6 @@
         ]
       }
     },
-
     "S3BucketSecureURL": {
       "Description": "Name of S3 bucket hosting content",
       "Value": {
