@@ -366,7 +366,7 @@
         "Name": "MyRestAPI"
       }
     },
-    "MockMethod": {
+    "PostVote": {
       "Type": "AWS::ApiGateway::Method",
       "Properties": {
         "RestApiId": {
@@ -418,9 +418,52 @@
         }
       }
     },
+
+    "RequestItems": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "MyRestApi"
+        },
+        "ResourceId": {
+          "Fn::GetAtt": [
+            "MyRestApi",
+            "RootResourceId"
+          ]
+        },
+        "HttpMethod": "GET",
+        "AuthorizationType": "NONE",
+        "MethodResponses": [
+          {
+            "StatusCode": "200"
+          }
+        ],
+        "Integration": {
+          "Type": "AWS",
+          "Credentials": {
+            "Fn::GetAtt": [
+              "ApiInvokeDynamoRole",
+              "Arn"
+            ]
+          },
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "SelectionPattern": ".*",
+              "StatusCode": "200"
+            }
+          ],
+          "RequestTemplates" : {
+            "application/json" : "{\"TableName\": \"VoteAppAggregates\",\"ReturnConsumedCapacity\": \"TOTAL\"}"
+          },
+          "Uri": "arn:aws:apigateway:eu-central-1:dynamodb:action/Scan"
+        }
+      }
+    },
+
     "Deployment": {
       "Type": "AWS::ApiGateway::Deployment",
-      "DependsOn": "MockMethod",
+      "DependsOn": ["PostVote", "RequestItems"],
       "Properties": {
         "RestApiId": {
           "Ref": "MyRestApi"

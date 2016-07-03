@@ -1,0 +1,49 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation Template for VoteApp",
+  "Resources": {
+    "MyRestApi2": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Description": "A test API",
+        "Name": "MyRestAPI2"
+      }
+    },
+    "MockMethod": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "MyRestApi2"
+        },
+        "ResourceId": {
+          "Fn::GetAtt": [
+            "MyRestApi2",
+            "RootResourceId"
+          ]
+        },
+        "HttpMethod": "GET",
+        "AuthorizationType": "NONE",
+        "MethodResponses": [
+          {
+            "StatusCode": "200"
+          }
+        ],
+        "Integration": {
+          "Type": "AWS",
+          "Credentials": "arn:aws:iam::073545597646:role/myLambda-ApiInvokeDynamoRole-UH5MKN52MTQ2",
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "SelectionPattern": ".*",
+              "StatusCode": "200"
+            }
+          ],
+          "RequestTemplates" : {
+            "application/json" : "{\"TableName\": \"VoteAppAggregates\",\"ReturnConsumedCapacity\": \"TOTAL\"}"
+          },
+          "Uri": "arn:aws:apigateway:eu-central-1:dynamodb:action/Scan"
+        }
+      }
+    }
+  }
+}
